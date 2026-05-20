@@ -8,21 +8,65 @@
 // please think carefully as to whether such customizations are really necessary
 // before doing so.
 
-
-// Custom definitions may go here
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://repo.dairy.foundation/releases"
+        }
+        maven {
+            url "https://maven.bitflip.club/releases"
+        }
+    }
+    dependencies {
+        classpath "dev.frozenmilk:Load:0.2.4"
+    }
+}
 
 // Include common definitions from above.
 apply from: '../build.common.gradle'
 apply from: '../build.dependencies.gradle'
+apply plugin: 'org.jetbrains.kotlin.android'
+apply plugin: 'dev.frozenmilk.sinister.sloth.load'
 
 android {
     namespace = 'org.firstinspires.ftc.teamcode'
 
-    packagingOptions {
-        jniLibs.useLegacyPackaging true
+    compileSdk 34
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+}
+
+repositories {
+    maven {
+        name = "nullftcReleases"
+        url = "https://maven.nullftc.dev/releases"
+    }
+    
+    maven {
+        url = "https://maven.bitflip.club/releases"
     }
 }
 
 dependencies {
     implementation project(':FtcRobotController')
+
+    implementation("com.bylazar.sloth:fullpanels:0.2.4+1.0.12") {
+        exclude group: 'com.bylazar.sloth', module: 'gamepad'
+        exclude group: 'com.bylazar.sloth', module: 'camerastream'
+    }
+
+    implementation("dev.frozenmilk.sinister:Sloth:0.2.4")
+    implementation "dev.nullftc:Profiler:SNAPSHOT-8e16b25"
+    implementation ("club.bitflip:utils:1.0.2") {
+        exclude group: 'com.bylazar'
+    }
 }
