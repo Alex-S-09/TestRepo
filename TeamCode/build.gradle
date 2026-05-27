@@ -63,7 +63,7 @@ dependencies {
 //    }
 //
 //    implementation("dev.frozenmilk.sinister:Sloth:0.2.4")
-//    implementation "dev.nullftc:Profiler:SNAPSHOT-8e16b25"
+    implementation "dev.nullftc:Profiler:SNAPSHOT-8e16b25"
     implementation ("club.bitflip:utils:1.0.2") {
         exclude group: 'com.bylazar'
     }
