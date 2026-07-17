@@ -4,6 +4,14 @@ Follow these steps every time you start a new project or a new day of coding!
 
 ---
 
+## 📥 Step 0: The First Time Setup (The "Download")
+If you don't have the robot code on your computer at all, you need to "clone" it.
+*   **Command:** `git clone <URL-FROM-GITHUB>`
+*   **What it does:** Downloads the entire project from GitHub to your computer.
+*   *Note: You only need to do this ONCE per computer!*
+
+---
+
 ## 🏎️ 1. Get the Latest Code (The "Sync")
 Before you start, make sure you have any changes your teammates made.
 *   **Command:** `git pull`
