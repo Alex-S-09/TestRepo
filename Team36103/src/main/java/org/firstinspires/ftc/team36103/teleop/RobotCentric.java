@@ -1,12 +1,13 @@
 package org.firstinspires.ftc.team36103.teleop;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.team36103.Hardware;
-
+@Disabled
 @TeleOp(name = "RobotCentric", group = "TeleOp")
 public class RobotCentric extends OpMode {
 
