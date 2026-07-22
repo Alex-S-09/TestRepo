@@ -77,7 +77,7 @@ public class Hardware {
      * Incorrect directions will cause heading or strafe to be inverted.
      */
     private static final EncoderDirection X_ENCODER_DIRECTION = EncoderDirection.FORWARD;
-    private static final EncoderDirection Y_ENCODER_DIRECTION = EncoderDirection.FORWARD;
+    private static final EncoderDirection Y_ENCODER_DIRECTION = EncoderDirection.REVERSED;
 
     /* =====================================================
      * CONSTRUCTOR
@@ -190,11 +190,13 @@ public class Hardware {
      * @param yaw     Clockwise (+) / counter-clockwise (-) rotation power [-1.0, 1.0]
      */
     public void driveFieldCentric(double axial, double lateral, double yaw) {
-        double heading = getHeading(AngleUnit.RADIANS);
+        double theta = Math.atan2(axial, lateral);
+        double r = Math.hypot(lateral, axial);
+        theta = AngleUnit.normalizeRadians(theta - getHeading(AngleUnit.RADIANS));
 
         // Rotate translational inputs by the inverse of the robot's current heading
-        double rotatedAxial   = axial * Math.cos(-heading) - lateral * Math.sin(-heading);
-        double rotatedLateral = axial * Math.sin(-heading) + lateral * Math.cos(-heading);
+        double rotatedAxial   = r * Math.sin(theta);
+        double rotatedLateral = r * Math.cos(theta);
 
         driveRobotCentric(rotatedAxial, rotatedLateral, yaw);
     }
