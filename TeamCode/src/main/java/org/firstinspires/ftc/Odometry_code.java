@@ -20,6 +20,8 @@ public class Odometry_code extends LinearOpMode { // Our main robot "Brain"
     private DcMotor back_left_motor, back_right_motor;
     // Our "Pinpoint" sensor for tracking location
     private GoBildaPinpointDriver odo;
+    // Our Intake controller (from a separate file)
+    private IntakeControl intake = new IntakeControl();
 
     // How fast we want the robot to go (0.0 to 1.0)
     static final double DRIVE_SPEED = 0.4;
@@ -54,9 +56,12 @@ public class Odometry_code extends LinearOpMode { // Our main robot "Brain"
         // Reset the sensor so (0,0) is exactly where the robot is sitting right now
         odo.resetPosAndIMU();
 
+        // Initialize the intake controller
+        intake.init(hardwareMap);
+
         // Send a message to the controller/phone
         telemetry.addData("Status", "Ready");
-        // Update the screen
+        telemetry.addData("Intake HW", intake.getStatus());
         telemetry.update();
 
         // Wait for you to press the PLAY button
@@ -64,6 +69,10 @@ public class Odometry_code extends LinearOpMode { // Our main robot "Brain"
 
         // Only do this if the STOP button hasn't been pressed
         if (opModeIsActive()) {
+
+            // Start the intake and wait a moment for it to stabilize
+            intake.start();
+            sleep(500);
 
             // ---- Forward path ----
             // Drive forward 10 inches
@@ -86,6 +95,9 @@ public class Odometry_code extends LinearOpMode { // Our main robot "Brain"
             sleep(300);
             // Drive backward 10 inches
             driveInches(48, DRIVE_SPEED);
+
+            // Stop the intake when autonomous is done
+            intake.stop();
 
             // Tell the team we finished!
             telemetry.addData("Status", "Done - back at start");
@@ -171,10 +183,11 @@ public class Odometry_code extends LinearOpMode { // Our main robot "Brain"
             odo.update();
 
             Pose2D pos = odo.getPosition();
-            Pose2D velocity = odo.getVelocity();
+            
+            // Get the angular velocity directly from the driver (since getVelocity() does not exist)
+            double angularVelocity = odo.getHeadingVelocity(org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit.DEGREES);
 
             double currentAngle = pos.getHeading(AngleUnit.DEGREES);
-            double angularVelocity = velocity.getHeading(AngleUnit.DEGREES);
 
             double error = targetAngleDegrees - currentAngle;
 
