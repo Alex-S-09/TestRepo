@@ -8,105 +8,146 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.HyperionRobotics.constants.RobotConstants;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * goBILDA-style 6-wheel tank drivetrain (3 motors per side).
- * Supports arcade TeleOp and encoder-based Autonomous moves.
+ * Universal Drivetrain Handler.
+ * Supports 2-motor Tank, 4-motor Tank, 6-motor Tank, and 4-motor Mecanum (Strafe).
  */
 public class DriveTrain {
-    private final DcMotorEx leftFront;
-    private final DcMotorEx leftMiddle;
-    private final DcMotorEx leftBack;
-    private final DcMotorEx rightFront;
-    private final DcMotorEx rightMiddle;
-    private final DcMotorEx rightBack;
+    private final DcMotorEx leftFront, leftMiddle, leftBack;
+    private final DcMotorEx rightFront, rightMiddle, rightBack;
+    
+    private final List<DcMotorEx> leftMotors = new ArrayList<>();
+    private final List<DcMotorEx> rightMotors = new ArrayList<>();
+    private final List<DcMotorEx> allMotors = new ArrayList<>();
+
+    private final RobotConstants.DriveType type;
 
     public DriveTrain(HardwareMap hardwareMap) {
-        leftFront = hardwareMap.get(DcMotorEx.class, RobotConstants.LEFT_FRONT);
-        leftMiddle = hardwareMap.get(DcMotorEx.class, RobotConstants.LEFT_MIDDLE);
-        leftBack = hardwareMap.get(DcMotorEx.class, RobotConstants.LEFT_BACK);
-        rightFront = hardwareMap.get(DcMotorEx.class, RobotConstants.RIGHT_FRONT);
-        rightMiddle = hardwareMap.get(DcMotorEx.class, RobotConstants.RIGHT_MIDDLE);
-        rightBack = hardwareMap.get(DcMotorEx.class, RobotConstants.RIGHT_BACK);
+        this.type = RobotConstants.ACTIVE_DRIVE_TYPE;
 
-        // goBILDA convention: right side reversed for tank drive
-        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        leftMiddle.setDirection(DcMotorSimple.Direction.REVERSE);
-        leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightFront.setDirection(DcMotorSimple.Direction.FORWARD);
-        rightMiddle.setDirection(DcMotorSimple.Direction.FORWARD);
-        rightBack.setDirection(DcMotorSimple.Direction.FORWARD);
+        // Initialize all possible motor slots
+        leftFront   = safeGet(hardwareMap, RobotConstants.LEFT_FRONT);
+        leftMiddle  = safeGet(hardwareMap, RobotConstants.LEFT_MIDDLE);
+        leftBack    = safeGet(hardwareMap, RobotConstants.LEFT_BACK);
+        rightFront  = safeGet(hardwareMap, RobotConstants.RIGHT_FRONT);
+        rightMiddle = safeGet(hardwareMap, RobotConstants.RIGHT_MIDDLE);
+        rightBack   = safeGet(hardwareMap, RobotConstants.RIGHT_BACK);
+
+        // Organize motors based on drivetrain type
+        configureGroups();
+
+        // Set directions: Inverted to fix the robot moving backwards
+        for (DcMotorEx m : leftMotors)  m.setDirection(DcMotorSimple.Direction.FORWARD);
+        for (DcMotorEx m : rightMotors) m.setDirection(DcMotorSimple.Direction.REVERSE);
 
         setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    /** Arcade drive: forward (+y) and turn (+clockwise from driver view, stick x). */
-    public void arcadeDrive(double drive, double turn) {
-        double left = drive + turn;
-        double right = drive - turn;
-        double max = Math.max(Math.abs(left), Math.abs(right));
-        if (max > 1.0) {
-            left /= max;
-            right /= max;
+    private void configureGroups() {
+        switch (type) {
+            case TANK_2_MOTOR:
+                if (leftBack != null) leftMotors.add(leftBack);
+                if (rightBack != null) rightMotors.add(rightBack);
+                break;
+            case TANK_4_MOTOR:
+            case MECANUM:
+                if (leftFront != null) leftMotors.add(leftFront);
+                if (leftBack != null) leftMotors.add(leftBack);
+                if (rightFront != null) rightMotors.add(rightFront);
+                if (rightBack != null) rightMotors.add(rightBack);
+                break;
+            case TANK_6_MOTOR:
+                if (leftFront != null) leftMotors.add(leftFront);
+                if (leftMiddle != null) leftMotors.add(leftMiddle);
+                if (leftBack != null) leftMotors.add(leftBack);
+                if (rightFront != null) rightMotors.add(rightFront);
+                if (rightMiddle != null) rightMotors.add(rightMiddle);
+                if (rightBack != null) rightMotors.add(rightBack);
+                break;
         }
-        setTankPowers(left, right);
+        allMotors.addAll(leftMotors);
+        allMotors.addAll(rightMotors);
     }
 
-    /** Tank drive with independent left/right stick values. */
-    public void tankDrive(double leftPower, double rightPower) {
-        setTankPowers(
-                Range.clip(leftPower, -1.0, 1.0),
-                Range.clip(rightPower, -1.0, 1.0));
+    private DcMotorEx safeGet(HardwareMap hw, String name) {
+        try { return hw.get(DcMotorEx.class, name); } 
+        catch (Exception e) { return null; }
+    }
+
+    /** Standard Arcade Drive (Drive + Turn) */
+    public void arcadeDrive(double drive, double turn) {
+        arcadeDrive(drive, turn, 0.0);
+    }
+
+    /** Extended Arcade Drive with Strafe (Mecanum only) */
+    public void arcadeDrive(double drive, double turn, double strafe) {
+        if (type == RobotConstants.DriveType.MECANUM) {
+            // Mecanum Math
+            double fl = drive + turn + strafe;
+            double bl = drive + turn - strafe;
+            double fr = drive - turn - strafe;
+            double br = drive - turn + strafe;
+
+            double max = Math.max(Math.abs(fl), Math.max(Math.abs(bl), 
+                         Math.max(Math.abs(fr), Math.abs(br))));
+            if (max > 1.0) { fl /= max; bl /= max; fr /= max; br /= max; }
+
+            if (leftFront != null)  leftFront.setPower(fl);
+            if (leftBack != null)   leftBack.setPower(bl);
+            if (rightFront != null) rightFront.setPower(fr);
+            if (rightBack != null)  rightBack.setPower(br);
+        } else {
+            // Tank Math
+            double left = drive + turn;
+            double right = drive - turn;
+            setTankPowers(left, right);
+        }
     }
 
     public void setTankPowers(double left, double right) {
-        leftFront.setPower(left);
-        leftMiddle.setPower(left);
-        leftBack.setPower(left);
-        rightFront.setPower(right);
-        rightMiddle.setPower(right);
-        rightBack.setPower(right);
+        double max = Math.max(Math.abs(left), Math.abs(right));
+        if (max > 1.0) { left /= max; right /= max; }
+        
+        for (DcMotorEx m : leftMotors) m.setPower(left);
+        for (DcMotorEx m : rightMotors) m.setPower(right);
     }
 
     public void stop() {
-        setTankPowers(0.0, 0.0);
+        for (DcMotorEx m : allMotors) m.setPower(0.0);
     }
 
-    /**
-     * Drive a distance in inches using left-front / right-front encoders.
-     * Blocking helper — call from Autonomous with opModeIsActive check outside.
-     */
     public void driveInches(double inches, double power) {
         int target = (int) (inches * RobotConstants.COUNTS_PER_INCH);
         setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        leftFront.setTargetPosition(target);
-        rightFront.setTargetPosition(target);
-        leftMiddle.setTargetPosition(target);
-        rightMiddle.setTargetPosition(target);
-        leftBack.setTargetPosition(target);
-        rightBack.setTargetPosition(target);
-        setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        for (DcMotorEx m : allMotors) {
+            m.setTargetPosition(target);
+            m.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        }
         setTankPowers(Math.abs(power), Math.abs(power));
     }
 
     public void turnDegreesApprox(double degrees, double power) {
-        // Rough tank turn using wheel base estimate (~12 in). Tune for chassis.
-        double inches = (degrees / 360.0) * (Math.PI * 12.0);
+        double inches = (degrees / 360.0) * (Math.PI * 12.0); // Assume 12" wheelbase
         int target = (int) (inches * RobotConstants.COUNTS_PER_INCH);
         setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        leftFront.setTargetPosition(target);
-        leftMiddle.setTargetPosition(target);
-        leftBack.setTargetPosition(target);
-        rightFront.setTargetPosition(-target);
-        rightMiddle.setTargetPosition(-target);
-        rightBack.setTargetPosition(-target);
-        setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        
+        for (DcMotorEx m : leftMotors) m.setTargetPosition(target);
+        for (DcMotorEx m : rightMotors) m.setTargetPosition(-target);
+        
+        for (DcMotorEx m : allMotors) m.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         setTankPowers(Math.abs(power), Math.abs(power));
     }
 
     public boolean isBusy() {
-        return leftFront.isBusy() || rightFront.isBusy();
+        for (DcMotorEx m : allMotors) {
+            if (m.isBusy()) return true;
+        }
+        return false;
     }
 
     public void finishMotion() {
@@ -115,28 +156,18 @@ public class DriveTrain {
     }
 
     public void setMode(DcMotor.RunMode mode) {
-        leftFront.setMode(mode);
-        leftMiddle.setMode(mode);
-        leftBack.setMode(mode);
-        rightFront.setMode(mode);
-        rightMiddle.setMode(mode);
-        rightBack.setMode(mode);
+        for (DcMotorEx m : allMotors) m.setMode(mode);
     }
 
     public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior behavior) {
-        leftFront.setZeroPowerBehavior(behavior);
-        leftMiddle.setZeroPowerBehavior(behavior);
-        leftBack.setZeroPowerBehavior(behavior);
-        rightFront.setZeroPowerBehavior(behavior);
-        rightMiddle.setZeroPowerBehavior(behavior);
-        rightBack.setZeroPowerBehavior(behavior);
+        for (DcMotorEx m : allMotors) m.setZeroPowerBehavior(behavior);
     }
 
     public int getLeftEncoder() {
-        return leftFront.getCurrentPosition();
+        return leftMotors.isEmpty() ? 0 : leftMotors.get(0).getCurrentPosition();
     }
 
     public int getRightEncoder() {
-        return rightFront.getCurrentPosition();
+        return rightMotors.isEmpty() ? 0 : rightMotors.get(0).getCurrentPosition();
     }
 }

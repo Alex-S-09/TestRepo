@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.HyperionRobotics.constants;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
 /**
  * HyperionRobotics — hardware map names and tunable constants.
  * Match device names to your Robot Controller configuration.
@@ -7,7 +9,17 @@ package org.firstinspires.ftc.teamcode.HyperionRobotics.constants;
 public final class RobotConstants {
     private RobotConstants() {}
 
-    // ---- Drive (6-wheel tank: 3 motors per side) ----
+    // ---- Drivetrain Configuration ----
+    public enum DriveType {
+        TANK_2_MOTOR,   // LeftBack, RightBack
+        TANK_4_MOTOR,   // Front and Back pairs
+        TANK_6_MOTOR,   // Front, Middle, and Back pairs
+        MECANUM         // 4 motors with strafe capability
+    }
+
+    public static final DriveType ACTIVE_DRIVE_TYPE = DriveType.TANK_2_MOTOR; // Change this to switch setups
+
+    // ---- Drive Motors ----
     public static final String LEFT_FRONT = "leftFront";
     public static final String LEFT_MIDDLE = "leftMiddle";
     public static final String LEFT_BACK = "leftBack";
@@ -54,8 +66,8 @@ public final class RobotConstants {
     // ---- Pinpoint ----
     public static final String PINPOINT = "pinpoint";
     // Offsets of Pinpoint from robot center (mm). Update after mounting.
-    public static final double PINPOINT_X_OFFSET_MM = -84.0;
-    public static final double PINPOINT_Y_OFFSET_MM = -168.0;
+    public static final double PINPOINT_X_OFFSET_MM = 100.0;
+    public static final double PINPOINT_Y_OFFSET_MM = -40.0;
 
     // ---- Limelight 3A ----
     public static final String LIMELIGHT = "limelight";

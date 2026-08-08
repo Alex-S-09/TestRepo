@@ -30,20 +30,33 @@ public class ViperArm {
     private Stage currentStage = Stage.STOWED;
 
     public ViperArm(HardwareMap hardwareMap) {
-        primary = hardwareMap.get(DcMotorEx.class, RobotConstants.VIPER_MOTOR);
+        primary = safeGet(hardwareMap, RobotConstants.VIPER_MOTOR);
         if (RobotConstants.VIPER_DUAL_MOTOR) {
-            secondary = hardwareMap.get(DcMotorEx.class, RobotConstants.VIPER_MOTOR_2);
+            secondary = safeGet(hardwareMap, RobotConstants.VIPER_MOTOR_2);
         } else {
             secondary = null;
         }
 
-        configureMotor(primary);
+        if (primary != null) {
+            configureMotor(primary);
+        }
+        
         if (secondary != null) {
             configureMotor(secondary);
             secondary.setDirection(DcMotor.Direction.REVERSE);
         }
 
-        setStage(Stage.STOWED);
+        if (primary != null) {
+            setStage(Stage.STOWED);
+        }
+    }
+
+    private DcMotorEx safeGet(HardwareMap hw, String name) {
+        try {
+            return hw.get(DcMotorEx.class, name);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private void configureMotor(DcMotorEx motor) {
@@ -60,6 +73,7 @@ public class ViperArm {
     }
 
     public void goToTicks(int ticks) {
+        if (primary == null) return;
         int clipped = Range.clip(ticks, 0, RobotConstants.VIPER_MAX_TICKS);
         primary.setTargetPosition(clipped);
         primary.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -73,6 +87,7 @@ public class ViperArm {
 
     /** Manual jog while holding a bumper; switches to open-loop briefly. */
     public void jog(double power) {
+        if (primary == null) return;
         if (Math.abs(power) < 0.05) {
             holdPosition();
             return;
@@ -85,23 +100,25 @@ public class ViperArm {
     }
 
     public void holdPosition() {
+        if (primary == null) return;
         goToTicks(primary.getCurrentPosition());
     }
 
     public void stop() {
-        primary.setPower(0.0);
+        if (primary != null) primary.setPower(0.0);
         if (secondary != null) {
             secondary.setPower(0.0);
         }
     }
 
     public boolean isAtTarget() {
+        if (primary == null) return true;
         return Math.abs(primary.getCurrentPosition() - primary.getTargetPosition())
                 <= RobotConstants.VIPER_TOLERANCE;
     }
 
     public int getCurrentTicks() {
-        return primary.getCurrentPosition();
+        return (primary != null) ? primary.getCurrentPosition() : 0;
     }
 
     public Stage getCurrentStage() {
