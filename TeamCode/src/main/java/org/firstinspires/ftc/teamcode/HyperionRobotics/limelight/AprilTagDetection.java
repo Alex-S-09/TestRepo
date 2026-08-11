@@ -13,7 +13,26 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * AprilTag detection helpers: ID, angles, area, and distance.
+ * AprilTag detection helpers: ID, angles, area, and calibrated distance.
+ *
+ * Camera calibration taken after the Limelight was remounted higher / more level:
+ *
+ *   Distance     TX       TY       TA
+ *   24 in       +3.69    +2.65    2.660 %
+ *   48 in       +1.28    +0.92    0.665 %
+ *   72 in       +1.82    +0.31    0.291 %
+ *   96 in       -0.25    -0.12    0.163 %
+ *
+ * For an AprilTag of fixed physical size, apparent image area is approximately
+ * proportional to 1 / distance^2.  The four measurements give:
+ *
+ *   distance * sqrt(TA) = 39.143, 39.143, 38.840, 38.758
+ *
+ * Mean scale = 38.971.
+ *
+ * Therefore:
+ *
+ *   distanceInches = 38.971 / sqrt(TA_percent)
  */
 public class AprilTagDetection {
 
@@ -24,7 +43,7 @@ public class AprilTagDetection {
         public final double ta;
         public final double distanceInches;
 
-        // Raw pose coordinates, useful for telemetry and debugging.
+        // Raw pose coordinates are retained only for telemetry/debugging.
         public final double poseXInches;
         public final double poseYInches;
         public final double poseZInches;
@@ -52,7 +71,9 @@ public class AprilTagDetection {
 
     private static final double MIN_VALID_DISTANCE_IN = 2.0;
     private static final double MAX_VALID_DISTANCE_IN = 300.0;
-    private static final double AREA_DISTANCE_SCALE = 38.02;
+
+    // Recalibrated from the four measurements above.
+    private static final double AREA_DISTANCE_SCALE = 38.971;
 
     private final Limelight limelight;
 
@@ -61,9 +82,7 @@ public class AprilTagDetection {
     }
 
     public void useAprilTagPipeline() {
-        limelight.setPipeline(
-                RobotConstants.LL_PIPELINE_APRILTAG
-        );
+        limelight.setPipeline(RobotConstants.LL_PIPELINE_APRILTAG);
     }
 
     public List<TagInfo> getVisibleTags() {
@@ -83,40 +102,39 @@ public class AprilTagDetection {
         List<TagInfo> tags = new ArrayList<>();
 
         for (LLResultTypes.FiducialResult fiducial : fiducials) {
-            /*
-             * Keep the raw pose only for diagnostics. Do not use it
-             * for driving because this Limelight is returning a pose
-             * approximately ten times larger than the real distance.
-             */
-            Position robotPosition = fiducial
-                    .getRobotPoseTargetSpace()
-                    .getPosition()
-                    .toUnit(DistanceUnit.INCH);
 
-            double x = robotPosition.x;
-            double y = robotPosition.y;
-            double z = robotPosition.z;
+            double x = Double.NaN;
+            double y = Double.NaN;
+            double z = Double.NaN;
 
-            // Fiducial area is normalized 0–1; convert it to percentage 0–100.
-            double targetArea = fiducial.getTargetArea() * 100;
-            double distanceInches = Double.NaN;
+            try {
+                Position robotPosition = fiducial
+                        .getRobotPoseTargetSpace()
+                        .getPosition()
+                        .toUnit(DistanceUnit.INCH);
 
-            /*
-             * Calibrated using:
-             * 72 inches -> area 0.2983
-             * 24 inches -> area 2.5095
-             */
-            if (Double.isFinite(targetArea)
-                    && targetArea > 0.01) {
-                distanceInches =
-                        AREA_DISTANCE_SCALE
-                                / Math.sqrt(targetArea);
+                x = robotPosition.x;
+                y = robotPosition.y;
+                z = robotPosition.z;
+            } catch (Exception ignored) {
+                // Pose is diagnostic only. Preserve the tag even if pose is absent.
             }
 
-            /*
-             * Always preserve the detection, even if its distance
-             * cannot be calculated.
-             */
+            // FTC Limelight fiducial area is normalized 0-1. Convert to percent.
+            double targetArea = fiducial.getTargetArea() * 100.0;
+
+            double distanceInches = Double.NaN;
+
+            if (Double.isFinite(targetArea) && targetArea > 0.01) {
+                double calculated =
+                        AREA_DISTANCE_SCALE / Math.sqrt(targetArea);
+
+                if (calculated >= MIN_VALID_DISTANCE_IN
+                        && calculated <= MAX_VALID_DISTANCE_IN) {
+                    distanceInches = calculated;
+                }
+            }
+
             tags.add(new TagInfo(
                     fiducial.getFiducialId(),
                     fiducial.getTargetXDegrees(),
@@ -133,7 +151,7 @@ public class AprilTagDetection {
     }
 
     public TagInfo getNearestTag() {
-        List<TagInfo> tags = getVisibleTags();
+        List<TagInfo> tags = new ArrayList<>(getVisibleTags());
 
         if (tags.isEmpty()) {
             return null;
@@ -141,7 +159,9 @@ public class AprilTagDetection {
 
         tags.sort(
                 Comparator.comparingDouble(
-                        tag -> tag.distanceInches
+                        tag -> Double.isFinite(tag.distanceInches)
+                                ? tag.distanceInches
+                                : Double.POSITIVE_INFINITY
                 )
         );
 
@@ -154,7 +174,6 @@ public class AprilTagDetection {
                 return tag;
             }
         }
-
         return null;
     }
 
