@@ -50,7 +50,7 @@ This completely erases the accidental commit from your local `main` branch, maki
 ### Step 4: Push to Github
 
 1. Click on **Current Branch** one last time and switch back to your new feature branch (`feature/my-changes`).
-2. Click the **Push changes** button at the top of the screen.
+2. Click the **Push origin** button at the top of the screen.
 3. Go to GitHub.com and open your Pull Request!
 
 ---
