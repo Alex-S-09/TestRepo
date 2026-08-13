@@ -26,9 +26,32 @@ Once your work is finished on your side branch, you must open a Pull Request (PR
 
 ## 3. If you accidentally commited to main:
 
-If you forgot to switch branches and accidentally hit the "Commit" button in GitHub Desktop while on `main`, **do not panic**. Your local push will be blocked, and your code will not break the server.
+### Step 1: Create Your New Feature Branch
 
-Please immediately read our **[Troubleshooting Guide (TROUBLESHOOTING.md)](TROUBLESHOOTING.md)** which will guide you through moving your local commit to a safe feature branch without losing any of your hard work.
+1. Look at the top of your GitHub Desktop screen and click on **Current Branch: main**.
+2. Click the **New Branch** button.
+3. Name your branch (e.g., `feature/my-changes`) and click **Create Branch**.
+
+This safely copies your accidental commit over to your new feature branch.
+
+### Step 2: Switch Back to Main to Clean It Up
+
+1. Click on **Current Branch** at the top of the screen again.
+2. Select **main** from the list to switch back to it.
+
+### Step 3: Undo the Mistake on Main
+
+1. In the top-left sidebar of GitHub Desktop, click on the **History** tab.
+2. Look at the very top of the list for the accidental commit you just made.
+3. Right-click that commit and select **Undo commit**.
+
+This completely erases the accidental commit from your local `main` branch, making it perfectly clean again.
+
+### Step 4: Push to Github
+
+1. Click on **Current Branch** one last time and switch back to your new feature branch (`feature/my-changes`).
+2. Click the **Push changes** button at the top of the screen.
+3. Go to GitHub.com and open your Pull Request!
 
 ---
 
