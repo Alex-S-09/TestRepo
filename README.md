@@ -13,8 +13,8 @@ Before running this project, make sure you have the following installed:
 ### Installation & Setup
 
 1. Clone the repository to your computer:
-   
-   1. Go to file --> clone repository --> URL: https://github.com/Lightspeed1024/FTC-Mechanical-Masters-Code
+
+Go to file --> clone repository --> URL: https://github.com/Lightspeed1024/FTC-Mechanical-Masters-Code
 
 2. Open the project folder in your preferred code editor (like Android Studio).
 
