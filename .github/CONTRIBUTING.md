@@ -1,6 +1,6 @@
 # Contributing Guidelines
 
-Welcome to the team! To maintain a highly reliable product and a clean Git history, all collaborators must follow these exact repository workflow rules.
+Welcome to the team! To maintain an organized code workspace and a clean Git history, all collaborators must follow these exact repository workflow rules.
 
 ---
 
