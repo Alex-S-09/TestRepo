@@ -24,4 +24,4 @@ Before running this project, make sure you have the following installed:
 
 We have strict rules to keep our code clean, stable, and easy to read. Before you write a single line of code, you **must** read our rules:
 
-👉 **[READ THE CONTRIBUTING GUIDELINES (CONTRIBUTING.md)](CONTRIBUTING.md)**
+👉 **[READ THE CONTRIBUTING GUIDELINES (CONTRIBUTING.md)](.github/CONTRIBUTING.md)**
