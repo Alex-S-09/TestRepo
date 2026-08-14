@@ -2,8 +2,9 @@ name: "Folder Edit Check"
 
 on:
   pull_request:
-    paths:
-      - 'FtcRobotController/**' 
+    paths: 
+      - '**'
+      - '!teamcode/**'
 
 jobs:
   fail-and-warn:
