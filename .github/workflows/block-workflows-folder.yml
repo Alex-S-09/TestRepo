@@ -1,12 +1,14 @@
-name: "Folder Edit Check"
+name: "Block Workflows Folder"
 
 on:
   pull_request:
     paths:
-      - 'FtcRobotController/**' 
+      - '.github/workflows/**'
 
 jobs:
-  fail-and-warn:
+  fail-workflows:
+    if: github.actor != ''
+    
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -19,10 +21,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: "🛑 **ERROR:** You are not allowed to edit the `/FtcRobotController/` folder. Please revert your changes to this folder, or your pull request will be permanently blocked."
+              body: "🛑 **CUSTOM ERROR:** Only the repository owner can modify GitHub workflow automation files."
             })
-
       - name: Force Build Failure
-        run: |
-          echo "Unauthorized folder modification detected."
-          exit 1
+        run: exit 1
