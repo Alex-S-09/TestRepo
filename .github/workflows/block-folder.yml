@@ -3,7 +3,7 @@ name: "Folder Edit Check"
 on:
   pull_request:
     paths:
-      - 'FtcRobotController/**' # 👈 Change to your folder name
+      - 'FtcRobotController/**' 
 
 jobs:
   fail-and-warn:
