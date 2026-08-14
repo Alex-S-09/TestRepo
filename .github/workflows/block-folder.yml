@@ -1,0 +1,28 @@
+name: "Folder Edit Check"
+
+on:
+  pull_request:
+    paths:
+      - 'FtcRobotController/**' # 👈 Change to your folder name
+
+jobs:
+  fail-and-warn:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Post Custom Error Message
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "🛑 **ERROR:** You are not allowed to edit the `/FtcRobotController/` folder. Please revert your changes to this folder, or your pull request will be permanently blocked."
+            })
+
+      - name: Force Build Failure
+        run: |
+          echo "Unauthorized folder modification detected."
+          exit 1
