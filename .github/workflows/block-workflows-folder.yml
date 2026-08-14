@@ -8,6 +8,7 @@ on:
 jobs:
   fail-workflows:
     if: github.actor != ''
+    
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
