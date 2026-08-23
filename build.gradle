@@ -23,6 +23,9 @@ allprojects {
     repositories {
         mavenCentral()
         google()
+        maven { url = "https://repo.dairy.foundation/releases" }
+        maven { url = "https://mymaven.bylazar.com/releases" }
+        maven { url = 'https://maven.brott.dev/' }
     }
 }
 
@@ -30,14 +33,3 @@ repositories {
     mavenCentral()
 }
 
-buildscript {
-    repositories {
-        mavenCentral()
-        maven {
-            url "https://repo.dairy.foundation/releases"
-        }
-    }
-    dependencies {
-        classpath "dev.frozenmilk:Load:0.2.4"
-    }
-}
