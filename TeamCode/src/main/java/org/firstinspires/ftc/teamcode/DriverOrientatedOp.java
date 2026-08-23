@@ -7,7 +7,7 @@ import org.firstinspires.ftc.teamcode.mechanisms.BBMecanumDrive;
 import org.firstinspires.ftc.teamcode.mechanisms.Intake;
 
 @TeleOp
-public class MecanumFieldOrientatedOpMode extends OpMode {
+public class DriverOrientatedOp extends OpMode {
     BBMecanumDrive drive = new BBMecanumDrive();
     Intake intake = new Intake();
 
@@ -25,9 +25,6 @@ public class MecanumFieldOrientatedOpMode extends OpMode {
     public void init() {
         drive.init(hardwareMap, this.telemetry);
         intake.init(hardwareMap);
-
-        telemetry.addData("Initialization" , "Init complete");
-        telemetry.update();
     }
 
     @Override
