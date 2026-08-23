@@ -19,6 +19,7 @@ dependencies {
     implementation 'com.pedropathing:telemetry:1.0.0'
     implementation 'com.bylazar:fullpanels:1.0.12'
     implementation("dev.frozenmilk.sinister:Sloth:0.2.4")
-//    implementation 'com.acmerobotics.dashboard:dashboard:0.6.0'
+    implementation 'com.pedropathing:ivy:1.0.0'
+//    implementation 'com.acmerobotics.dashboard:dashboard:0.6.0' Already using the Sloth version
 }
 

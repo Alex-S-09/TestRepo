@@ -5,11 +5,17 @@
  */
 
 buildscript {
+    ext.kotlin_version = '2.0.20'
     repositories {
-        mavenCentral()
         google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.1.1'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
+
 
 plugins {
     // Note for FTC Teams: Do not modify this yourself.
@@ -17,8 +23,6 @@ plugins {
     id 'com.android.library' version '8.13.2' apply false
 }
 
-// This is now required because aapt2 has to be downloaded from the
-// google() repository beginning with version 3.2 of the Android Gradle Plugin
 allprojects {
     repositories {
         mavenCentral()
